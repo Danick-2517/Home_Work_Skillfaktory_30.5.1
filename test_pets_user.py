@@ -8,7 +8,7 @@ from selenium.webdriver.support import expected_conditions as EC
 @pytest.fixture(autouse=True)
 def driver():
     driver = webdriver.Chrome()
-    #driver.implicitly_wait(10)
+    driver.implicitly_wait(10)
     driver.get('https://petfriends.skillfactory.ru/login')
     driver.find_element(By.ID, 'email').send_keys('kireevd14@gmail.com')
     driver.find_element(By.ID, 'pass').send_keys('51151013Dd')
@@ -27,7 +27,9 @@ def driver():
 #1.Присутствуют все питомцы.
 def test_check_pets_users(driver):
     pets_number = int(driver.find_element(By.XPATH, '//div[@class=".col-sm-4 left"]').text.split('\n')[1].split(': ')[1])
-    rows_pets = driver.find_elements(By.CSS_SELECTOR, "div#all_my_pets table.table.table-hover tbody tr")
+    rows_pets= WebDriverWait(driver, 10).until(
+        EC.presence_of_all_elements_located((By.CSS_SELECTOR, "div#all_my_pets table.table.table-hover tbody tr"))
+    )
     assert pets_number == len(rows_pets)
 
 
@@ -36,11 +38,13 @@ def test_check_pets_users(driver):
 #----------------------------------------------------------------------------------------------------------------------#
 #2.Хотя бы у половины питомцев есть фото.
 def test_photos_of_users_pets(driver):
+    images = WebDriverWait(driver, 10).until(
+        EC.presence_of_all_elements_located((By.CSS_SELECTOR, "#all_my_pets table tbody tr img"))
+    )
     no_photo = 0
     photo = 0
     images_list = []
-    driver.implicitly_wait(10)
-    images = driver.find_elements(By.CSS_SELECTOR, '#all_my_pets table tbody tr th img')
+    #images = driver.find_elements(By.CSS_SELECTOR, '#all_my_pets table tbody tr th img')
 
     for i in range(len(images)):
         images_list.append(images[i])
@@ -64,8 +68,10 @@ def test_photos_of_users_pets(driver):
 #----------------------------------------------------------------------------------------------------------------------#
 #3.У всех питомцев есть имя, возраст и порода.
 def test_name_age_breed(driver):
-    driver.implicitly_wait(10)
-    rows_pets = driver.find_elements(By.CSS_SELECTOR, "div#all_my_pets table.table tbody tr")
+    rows_pets = WebDriverWait(driver, 10).until(
+        EC.presence_of_all_elements_located((By.CSS_SELECTOR, "div#all_my_pets table.table tbody tr"))
+    )
+    #rows_pets = driver.find_elements(By.CSS_SELECTOR, "div#all_my_pets table.table tbody tr")
     names, breeds, ages = [], [], []
 
     for row in rows_pets:
@@ -90,8 +96,10 @@ def test_name_age_breed(driver):
 #----------------------------------------------------------------------------------------------------------------------#
 #4.У всех питомцев разные имена.
 def test_names_pets(driver):
-    driver.implicitly_wait(10)
-    names_pets= driver.find_elements(By.XPATH, '//*[@id="all_my_pets"]/table/tbody/tr/td[1]')
+    names_pets = WebDriverWait(driver, 10).until(
+        EC.presence_of_all_elements_located((By.XPATH, '//*[@id="all_my_pets"]/table/tbody/tr/td[1]'))
+    )
+    #names_pets= driver.find_elements(By.XPATH, '//*[@id="all_my_pets"]/table/tbody/tr/td[1]')
     names = [name.text for name in names_pets]
     print(names)
     assert len(names) == len(set(names)), "Есть повторяющиеся имена питомцев!"
@@ -102,7 +110,10 @@ def test_names_pets(driver):
 #----------------------------------------------------------------------------------------------------------------------#
 #5.В списке нет повторяющихся питомцев. (Сложное задание).
 def test_duplicates_pets(driver):
-    pets = driver.find_elements(By.XPATH, '//*[@id="all_my_pets"]/table/tbody/tr')
+    pets = WebDriverWait(driver, 10).until(
+        EC.presence_of_all_elements_located((By.XPATH, '//*[@id="all_my_pets"]/table/tbody/tr'))
+    )
+    #pets = driver.find_elements(By.XPATH, '//*[@id="all_my_pets"]/table/tbody/tr')
     pets_data = [pet.text for pet in pets if pet.text != ""]
 
     assert len(pets_data) == len(set(pets_data)), "Есть повторяющиеся карточки питомцев!"
